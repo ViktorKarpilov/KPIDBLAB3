@@ -1,0 +1,41 @@
+﻿@page "/login"
+@using KPI.DB.Shared
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+@inject IPageBase PageBase
+
+<EditForm Model="@person" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <label>Name</label>
+    <InputText id="name" @bind-Value="@person.Name" />
+    <label>Type</label>
+    <InputSelect @bind-Value="person.Type">
+        @foreach (var type in Enum.GetValues(typeof(PersonType)))
+        {
+            <option value="@type">@type</option>
+        }
+    </InputSelect>
+    <label>Email</label>
+    <input type="email" id="email" size="30" @bind="person.Email" required>
+
+    <button type="submit">Submit</button>
+</EditForm>
+
+@code {
+    private Person person = new Person();
+
+
+    protected async Task HandleValidSubmit()
+    {
+        // create request object
+        using var result = await Http.PostAsJsonAsync<Person>("Persons", person);
+        Person loggined = await result.Content.ReadFromJsonAsync<Person>();
+
+        PageBase.WriteCookies("personId", loggined.Id.ToString());
+
+        NavigationManager.NavigateTo("/assignments");
+    }
+}

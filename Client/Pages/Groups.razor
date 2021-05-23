@@ -1,0 +1,71 @@
+﻿@page "/groups"
+@using KPI.DB.Shared
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<div>
+    <div>
+        Groups
+        <hr />
+        @foreach (var group in groups)
+        {
+            <hr />
+            <div>@group.Name</div>
+            <button type="button" class="btn btn-primary" @onclick="() => AssignPerson(group.Name)">Assign me</button>
+            <hr />
+        }
+    </div>
+    <div>
+        <hr />
+        Your group(s)
+        @foreach (var group in personGroups)
+        {
+            <hr />
+            <div>@group.Name</div>
+            <hr />
+        }
+    </div>
+</div>
+
+<div>
+    @*<label>Create person assignment</label>
+    <EditForm Model="@newAssignment" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <label>New assignment points</label>
+        <InputNumber id="points" @bind-Value="@newAssignment.assignment.Points" />
+        <label>New Assignment deadline</label>
+        <input id="deadline" @bind="@newAssignment.assignment.Deadline" @bind:format="yyyy-MM-dd" />
+
+        <button type="submit">Submit</button>*@
+    <!--</EditForm>-->
+</div>
+
+@code {
+
+    private IEnumerable<Group> groups = new List<Group>();
+    private IEnumerable<Group> personGroups = new List<Group>();
+
+    protected async Task AssignPerson(string group)
+    {
+        int personId = Convert.ToInt32(await JsRuntime.InvokeAsync<string>("ReadCookie.ReadCookie", "personId"));
+        // create request object
+        PersonGroup assignment = new PersonGroup()
+        {
+            Person = new Person() { Id = personId },
+            GroupName = group
+        };
+        await Http.PostAsJsonAsync("Groups", assignment);
+        personGroups = await Http.GetFromJsonAsync<IEnumerable<Group>>($"Groups/{personId}");
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        string personId = await JsRuntime.InvokeAsync<string>("ReadCookie.ReadCookie", "personId");
+        groups = await Http.GetFromJsonAsync<IEnumerable<Group>>($"Groups");
+        personGroups = await Http.GetFromJsonAsync<IEnumerable<Group>>($"Groups/{personId}");
+    }
+}

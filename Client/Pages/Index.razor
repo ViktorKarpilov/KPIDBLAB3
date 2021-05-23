@@ -1,0 +1,43 @@
+﻿@page "/"
+@using KPI.DB.Shared
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+@foreach (var assginment in assignments)
+{
+    <div>@assginment.Points</div>
+    <div>@assginment.Deadline</div>
+}
+
+<EditForm Model="@newAssignment" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputNumber id="points" @bind-Value="@newAssignment.Points" />
+    <input id="deadline" @bind="@newAssignment.Deadline" @bind:format="yyyy-MM-dd" />
+
+    <button type="submit">Submit</button>
+</EditForm>
+
+@newAssignment.Deadline
+@newAssignment.Points
+
+@code {
+
+    private HomeAssignment newAssignment = new();
+    private HomeAssignment created = new();
+    private IEnumerable<HomeAssignment> assignments = new List<HomeAssignment>();
+
+    protected async Task HandleValidSubmit()
+    {
+        // create request object
+        await Http.PostAsJsonAsync("HomeAssignments", newAssignment);
+
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+}

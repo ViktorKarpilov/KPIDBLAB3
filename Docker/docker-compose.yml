@@ -1,0 +1,23 @@
+version: '3.7'
+
+services:
+  db:
+    image: postgres:13
+    labels:
+      - zno-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: YourStrongPassw0rd
+      POSTGRES_DB: znodatabase
+    ports:
+      - "1234:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: psql -U postgres -c 'create database maindatabase'
+      interval: 1s
+      timeout: 10s
+      retries: 10
+      
+volumes:
+  pgdata:

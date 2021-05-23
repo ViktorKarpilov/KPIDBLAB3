@@ -1,0 +1,87 @@
+﻿@page "/assignments"
+@using KPI.DB.Shared
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<div>
+    You assgignments
+    <hr />
+    @foreach (var assginment in assignments)
+    {
+        <hr />
+        <label>Assignment points</label>
+        <div>@assginment.Points</div>
+        <label>Assignment deadline</label>
+        <div>@assginment.Deadline</div>
+        <hr />
+    }
+</div>
+
+<div>
+    <label>Create person assignment</label>
+    <EditForm Model="@newAssignment" OnValidSubmit="@HandleValidPersonalSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <label>New assignment points</label>
+        <InputNumber id="points" @bind-Value="@newAssignment.assignment.Points" />
+        <label>New Assignment deadline</label>
+        <input id="deadline" @bind="@newAssignment.assignment.Deadline" @bind:format="yyyy-MM-dd" />
+
+        <button type="submit">Submit</button>
+    </EditForm>
+</div>
+<div>
+    <label>Create person assignment</label>
+    <EditForm Model="@newGroupAssignment" OnValidSubmit="@HandleValidGroupSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <label>New assignment points</label>
+        <InputNumber id="points" @bind-Value="@newGroupAssignment.Assignment.Points" />
+        <label>New Assignment deadline</label>
+        <input id="deadline" @bind="@newGroupAssignment.Assignment.Deadline" @bind:format="yyyy-MM-dd" />
+        <InputSelect @bind-Value="newGroupAssignment.GroupName">
+            @foreach (var type in personGroups)
+            {
+                <option value="@type.Name">@type.Name</option>
+            }
+        </InputSelect>
+
+        <button type="submit">Submit</button>
+    </EditForm>
+</div>
+
+@code {
+
+    private CreateHomeAssignment newAssignment = new() { assignment = new HomeAssignment() { Deadline=DateTime.Now } };
+    private GroupAssignment newGroupAssignment = new() { Assignment = new HomeAssignment() { Deadline=DateTime.Now } };
+    private HomeAssignment created = new();
+    private IEnumerable<HomeAssignment> assignments = new List<HomeAssignment>();
+    private IEnumerable<Group> personGroups = new List<Group>();
+
+    protected async Task HandleValidPersonalSubmit()
+    {
+        newAssignment.PersonId = Convert.ToInt32(await JsRuntime.InvokeAsync<string>("ReadCookie.ReadCookie", "personId"));
+        // create request object
+        await Http.PostAsJsonAsync("HomeAssignments", newAssignment);
+        assignments = await Http.GetFromJsonAsync<IEnumerable<HomeAssignment>>($"HomeAssignments/{newAssignment.PersonId}");
+        StateHasChanged();
+    }
+
+    protected async Task HandleValidGroupSubmit()
+    {
+        await Http.PostAsJsonAsync("HomeAssignments/group", newGroupAssignment);
+        string personId = await JsRuntime.InvokeAsync<string>("ReadCookie.ReadCookie", "personId");
+        assignments = await Http.GetFromJsonAsync<IEnumerable<HomeAssignment>>($"HomeAssignments/{personId}");
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        string personId = await JsRuntime.InvokeAsync<string>("ReadCookie.ReadCookie", "personId");
+        assignments = await Http.GetFromJsonAsync<IEnumerable<HomeAssignment>>($"HomeAssignments/{personId}");
+        personGroups = await Http.GetFromJsonAsync<IEnumerable<Group>>($"Groups/{personId}");
+    }
+}

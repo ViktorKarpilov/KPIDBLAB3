@@ -1,0 +1,39 @@
+﻿@inherits LayoutComponentBase
+@inject IJSRuntime JsRuntime
+@inject NavigationManager NavManager
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <div class="main">
+        <div class="content px-4">
+            @Body
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    public async Task WriteCookies(string name, string value, int time = 45)
+    {
+        await JsRuntime.InvokeAsync<object>("WriteCookie.WriteCookie", name, value, DateTime.Now.AddMinutes(time));
+    }
+
+    public async Task<string> ReadCookies(string name)
+    {
+        return await JsRuntime.InvokeAsync<string>("ReadCookie.ReadCookie", name);
+    }
+
+    protected override async void OnInitialized()
+    {
+        var test = await ReadCookies("personId");
+
+            if (await ReadCookies("personId") == "")
+            {
+                NavManager.NavigateTo("/login");
+            }
+    }
+}
