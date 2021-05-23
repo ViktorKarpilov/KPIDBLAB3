@@ -10,5 +10,6 @@ namespace KPI.DB.Persistance.Repositories
         Task<int> CreateLesson(Lesson lesson);
         Task<IEnumerable<Lesson>> GetGroupLessons(string groupName);
         Task<IEnumerable<Lesson>> GetPersonLessons(int id);
+        Task UpdateLesson(Lesson newLesson);
     }
 }

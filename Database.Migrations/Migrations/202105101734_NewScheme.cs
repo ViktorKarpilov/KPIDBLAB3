@@ -27,14 +27,6 @@ namespace KPI.DB.Database.Migrations.Migrations
             CreateEnum(this, TypeEnum, personTypes);
 
             Execute.Sql(@"
-                    CREATE TABLE public.VersionInfo (
-                        Version int8 NOT NULL,
-                        AppliedOn timestamp NULL,
-                        Description varchar(1024) NULL
-                    );
-
-                    CREATE UNIQUE INDEX UC_Version ON public.VersionInfo USING btree(Version);
-
                     CREATE TABLE public.groups (
                         name text NOT NULL,
                         CONSTRAINT PK_groups PRIMARY KEY(name)

@@ -40,5 +40,11 @@ namespace KPI.DB.Server.Controllers
         {
             return await LessonsRepository.GetPersonLessons(id);
         }
+
+        [HttpPut]
+        public async Task UpdateLesson(DomainLesson lesson)
+        {
+            await LessonsRepository.UpdateLesson(lesson);
+        }
     }
 }

@@ -19,7 +19,14 @@ namespace KPI.DB.Persistance.Repositories
 
         public async Task<IEnumerable<Group>> GetAllGroups()
         {
-            return await Accessor.Connection.QueryAsync<Group>($"select * from groups;");
+            try
+            {
+                return await Accessor.Connection.QueryAsync<Group>($"select * from groups;");
+            }
+            catch (Exception)
+            {
+                return new List<Group>();
+            }
         }
 
         public async Task<IEnumerable<Group>> GetAllPersonGroups(Person person)

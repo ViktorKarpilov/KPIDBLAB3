@@ -2,4 +2,73 @@
 @using KPI.DB.Shared
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
 
+<div>
+    Your lessons
+    <hr />
+
+    @foreach (var lesson in lessons)
+    {
+        <hr />
+        <label>Lesson theme</label>
+        <div>@lesson.Theme</div>
+        <label>Lesson time</label>
+        <div>
+            <input @bind="@lesson.Time" @bind:format="yyyy-MM-dd" />
+            <button type="button" class="btn btn-primary" @onclick="() => UpdateLessons(lesson)">Correct time</button>
+        </div>
+        <hr />
+    }
+</div>
+
+<div>
+    <label>Create lesson</label>
+    <EditForm Model="@createLesson" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <label>New lesson theme</label>
+        <InputText id="text" @bind-Value="@createLesson.Lesson.Theme" />
+        <label>New lesson time</label>
+        <input id="deadline" @bind="@createLesson.Lesson.Time" @bind:format="yyyy-MM-dd" />
+        <InputSelect @bind-Value="createLesson.GroupName">
+            <option>Choose</option>
+            @foreach (var type in personGroups)
+            {
+                <option value="@type.Name">@type.Name</option>
+            }
+        </InputSelect>
+        <button type="submit">Submit</button>
+    </EditForm>
+</div>
+
+@code {
+
+    private IEnumerable<Lesson> lessons = new List<Lesson>();
+    private GroupLesson createLesson = new GroupLesson() { Lesson= new Lesson() { Time = DateTime.Now } };
+    private IEnumerable<Group> personGroups = new List<Group>();
+
+    protected async Task HandleValidSubmit()
+    {
+        await Http.PostAsJsonAsync($"lessons/group", createLesson);
+        string personId = await JsRuntime.InvokeAsync<string>("ReadCookie.ReadCookie", "personId");
+        lessons = await Http.GetFromJsonAsync<IEnumerable<Lesson>>($"lessons/{personId}");
+        StateHasChanged();
+    }
+
+    protected async Task UpdateLessons(Lesson lesson)
+    {
+        await Http.PutAsJsonAsync("lessons", lesson);
+        string personId = await JsRuntime.InvokeAsync<string>("ReadCookie.ReadCookie", "personId");
+        lessons = await Http.GetFromJsonAsync<IEnumerable<Lesson>>($"lessons/{personId}");
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        string personId = await JsRuntime.InvokeAsync<string>("ReadCookie.ReadCookie", "personId");
+        lessons = await Http.GetFromJsonAsync<IEnumerable<Lesson>>($"lessons/{personId}");
+        personGroups = await Http.GetFromJsonAsync<IEnumerable<Group>>($"Groups/{personId}");
+    }
+}

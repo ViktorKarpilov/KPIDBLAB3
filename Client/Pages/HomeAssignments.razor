@@ -43,9 +43,10 @@
         <label>New Assignment deadline</label>
         <input id="deadline" @bind="@newGroupAssignment.Assignment.Deadline" @bind:format="yyyy-MM-dd" />
         <InputSelect @bind-Value="newGroupAssignment.GroupName">
+            <option>Choose</option>
             @foreach (var type in personGroups)
             {
-                <option value="@type.Name">@type.Name</option>
+            <option value="@type.Name">@type.Name</option>
             }
         </InputSelect>
 

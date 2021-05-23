@@ -146,7 +146,6 @@ namespace KPI.DB.Database.Migrations
                 runner.ListMigrations();
             }
             runner.ListMigrations();
-            //runner.MigrateUp();
 
             if (migrationDirection == MigrationDirection.Up)
             {

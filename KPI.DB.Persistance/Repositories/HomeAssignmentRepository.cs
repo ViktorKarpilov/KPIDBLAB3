@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using KPI.DB.Domain.Models;
 using KPI.DB.Persistance.Configurations;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -17,12 +18,26 @@ namespace KPI.DB.Persistance.Repositories
 
         public async Task<HomeAssignment> Get(int id)
         {
-            return await Accessor.Connection.QuerySingleAsync<HomeAssignment>($"SELECT * FROM public.home_assignments ha WHERE ha.id = {id}");
+            try
+            {
+                return await Accessor.Connection.QuerySingleAsync<HomeAssignment>($"SELECT * FROM public.home_assignments ha WHERE ha.id = {id}");
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         public async Task<IEnumerable<HomeAssignment>> GetAllAsignmentsForPerson(int id)
         {
-            return await Accessor.Connection.QueryAsync<HomeAssignment>($"select * from home_assignments ha join person_assignments pa on ha.id = pa.home_assignment where pa.person_id = {id}");
+            try
+            {
+                return await Accessor.Connection.QueryAsync<HomeAssignment>($"select * from home_assignments ha join person_assignments pa on ha.id = pa.home_assignment where pa.person_id = {id}");
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         public async Task AssignToGroup(HomeAssignment newAssignment, string groupName)
